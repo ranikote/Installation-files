@@ -1,0 +1,74 @@
+. Stop the JBoss Server
+First, ensure that the JBoss server is not running:
+
+If JBoss was started manually using a script:
+
+
+# Navigate to the JBoss bin directory
+cd /path/to/jboss/bin
+
+# Stop the JBoss server
+./jboss-cli.sh --connect command=:shutdown
+If JBoss is running as a service:
+
+
+sudo systemctl stop jboss
+2. Disable the JBoss Service (if applicable)
+If you have set up JBoss to run as a system service, disable it to prevent it from starting automatically on boot:
+
+
+sudo systemctl disable jboss
+3. Remove the JBoss Installation Directory
+Remove the JBoss installation directory. Replace /path/to/jboss with the actual installation path of your JBoss server:
+
+sudo rm -rf /path/to/jboss
+Example:
+
+
+sudo rm -rf /opt/jboss
+4. Remove JBoss User (if a dedicated user was created)
+If you created a specific user for running JBoss, you might want to remove that user:
+
+
+sudo userdel -r jboss
+5. Clean Up Environment Variables
+If you have set any environment variables for JBoss, such as JBOSS_HOME in your shell configuration file (~/.bashrc, ~/.profile, or /etc/environment), you should remove or comment them out.
+
+Open the configuration file with a text editor:
+
+
+nano ~/.bashrc
+Look for lines like this and remove them:
+
+
+export JBOSS_HOME=/path/to/jboss
+export PATH=$PATH:$JBOSS_HOME/bin
+Then, apply the changes:
+
+source ~/.bashrc
+6. Remove Systemd Service File (if applicable)
+If JBoss was configured to run as a systemd service, you might have a service file like /etc/systemd/system/jboss.service. Remove it:
+
+sudo rm /etc/systemd/system/jboss.service
+Then reload the systemd daemon to apply changes:
+
+sudo systemctl daemon-reload
+7. Remove Log and Configuration Files (if necessary)
+If there are any leftover log or configuration files, you might want to remove them. This might include directories such as:
+
+
+sudo rm -rf /var/log/jboss
+sudo rm -rf /etc/jboss
+8. Verify Removal
+To ensure that JBoss is fully uninstalled, check if any JBoss-related processes are still running or if any files remain:
+
+
+ps aux | grep jboss
+If any processes are still running, you can kill them using their process ID (PID):
+
+sudo kill -9 <PID>
+And to find any remaining files:
+
+bash
+Copy code
+sudo find / -name "*jboss*"
