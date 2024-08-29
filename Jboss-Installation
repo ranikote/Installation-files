@@ -1,3 +1,7 @@
+LInk:=https://medium.com/@hasnat.saeed/install-jboss-wildfly-on-ubuntu-18-04-ac00719a2f02
+
+
+
 WildFly, formerly known as JBoss AS, or simply JBoss, is a Java EE certified application server authored by JBoss, now developed by Red Hat.
 
 Wildfly is a production-ready, cross-platform and open-source application server that is flexible, lightweight and is based on pluggable subsystems that can be added or removed as needed.
