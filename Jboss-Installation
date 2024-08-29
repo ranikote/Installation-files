@@ -1,0 +1,179 @@
+WildFly, formerly known as JBoss AS, or simply JBoss, is a Java EE certified application server authored by JBoss, now developed by Red Hat.
+
+Wildfly is a production-ready, cross-platform and open-source application server that is flexible, lightweight and is based on pluggable subsystems that can be added or removed as needed.
+
+Some of the key features of Wildfly are:
+
+Incredible Web Performance and Scalability
+Efficient Memory Management
+Slim and Customizable Runtime
+Powerful Server Administration
+Unified Configuration & Management
+Domain & Standalone Operational Modes
+Concurrent and Fast Classloading
+Full Java EE 8 Support
+In this tutorial, we will go through the process of setting up the Wildfly server on Ubuntu 18.04. So let us begin.
+
+Step 1 — Install JDK
+Wildfly requires Java 8 or later versions to work. You can check and verify that Java is installed with the following command.
+
+$ java -version
+If java is not installed, you will see “java: command not found”. Run below commands to install Java.
+
+$ sudo apt-get update
+$ sudo apt-get install default-jdk -y
+After installation, check if java is installed correctly by executing below command
+
+$ java -version
+
+If Java is installed, the output should look similar to above depending upon what is the latest version of java at that time.
+
+Step 2 — Download and Extract Wildfly Server
+Check Wildlfy downloads page for latest releases before downloading. For this tutorial, we will download Wildfly 16.0.0.Final (Java EE Full & Web Distribution).
+
+We are going to install Wildfly to /opt/ directory, so we will download the Wildfly package to that location.
+
+Change directory to /opt/ and download Wildfly to that directory.
+
+$ cd /opt
+$ sudo wget https://download.jboss.org/wildfly/16.0.0.Final/wildfly-16.0.0.Final.tar.gz
+Extract the tar package and rename the extracted directory to wildfly. This will be Wildfly’s installation directory
+
+$ sudo tar -xvzf wildfly-16.0.0.Final.tar.gz
+$ sudo mv wildfly-16.0.0.Final /opt/wildfly
+Step 3 — Create User and Group for Wildfly
+We should not run Wildfly under the root user for security reasons. Let’s create a group wildfly and add a user wildfly to it.
+
+Additionally, the home directory of wildfly user will be the Wildfly’s installation directory i.e. /opt/wildfly/.
+
+$ sudo groupadd wildfly
+$ sudo useradd -r -g wildfly -d /opt/wildfly -s /sbin/nologin wildfly
+Step 4 — Change Permission and Ownership of the Wildfly Installation Directory
+Next, we will modify ownership and permission of /opt/wildfly/ directory. We will also give executable permissions to /opt/wildfly/bin/ directory. While under /opt/ directory, run the following commands:
+
+$ sudo chown -R wildfly: wildfly
+$ sudo chmod o+x /opt/wildfly/bin/
+Step 5 — Creating a SystemD Service File for Wildfly
+Create a configuration directory for Wildfly under /etc/ directory by the name wildfly.
+
+$ cd /etc/
+$ sudo mkdir wildfly
+Copy Wildfly configuration file /opt/wildfly/docs/contrib/scripts/systemd/wildfly.conf to /etc/wildfly/ directory
+
+$ sudo cp /opt/wildfly/docs/contrib/scripts/systemd/wildfly.conf /etc/wildfly/
+Next, copy Wildfly launch script (launch.sh) under /opt/wildfly/docs/contrib/scripts/systemd/ to /opt/wildfly/bin/ directory
+
+$ sudo cp /opt/wildfly/docs/contrib/scripts/systemd/launch.sh /opt/wildfly/bin/
+We need to make wildfly user as the owner of this script so that it can execute it:
+
+$ sudo chown wildfly: /opt/wildfly/bin/launch.sh
+Now, copy service definition file (wildfly.service) under /opt/wildfly/docs/contrib/scripts/systemd/ to /etc/systemd/system/ directory
+
+$ sudo cp /opt/wildfly/docs/contrib/scripts/systemd/wildfly.service /etc/systemd/system/
+Open wildfly.service in an editor
+
+$ sudo nano /etc/systemd/system/wildfly.service
+Make the changes marked as bold or you can simply copy/paste the below content as it is.
+
+[Unit]
+Description=The WildFly Application Server
+After=syslog.target network.target
+Before=httpd.service
+[Service]
+Environment=LAUNCH_JBOSS_IN_BACKGROUND=1
+EnvironmentFile=-/etc/wildfly/wildfly.conf
+User=wildfly
+Group=wildfly
+LimitNOFILE=102642
+PIDFile=/var/run/wildfly/wildfly.pid
+ExecStart=/opt/wildfly/bin/launch.sh $WILDFLY_MODE $WILDFLY_CONFIG $WILDFLY_BIND
+StandardOutput=null
+[Install]
+WantedBy=multi-user.target
+Save and exit the file.
+
+Reload systemd manager configuration and enable wildfly service on system startup
+
+$ sudo systemctl daemon-reload
+$ sudo systemctl enable wildfly
+To start wildfly system service:
+
+$ sudo systemctl start wildfly
+Once the service is started, we can check the status by running below command:
+
+$ sudo systemctl status wildfly
+If the service started successfully, we should see something like below:
+
+
+The Active status, as highlighted, above verifies that the service is up and running.
+
+We can also tail the Wildfly server logs with below command:
+
+$ sudo tail -f /opt/wildfly/standalone/log/server.log
+
+Now access Wildfly server at:
+
+http://<instance-public-ip>:8080/
+
+
+Step 8 — Configure Wildfly Management Console
+The Wildfly management console allows us to manage different aspects of the Wildfly server. e.g. configuring subsystems, server monitoring, managing deployments or access control.
+
+By default, the management console is not made accessible remotely. To make it accessible remotely, we have to make small changes in 3 files. So let’s start
+
+Open wildfly.conf file under /etc/wildfly/ directory
+
+$ sudo nano /etc/wildfly/wildfly.conf
+Add a line at the end as shown below:
+
+
+Save and exit the file.
+
+Now open launch.sh in /opt/wildfly/bin/ directory and change its contents as shown below:
+
+$ sudo nano /opt/wildfly/bin/launch.sh
+
+Save and exit the file
+
+Finally, open Wildfly’s system service definition file (wildfly.service) under /etc/systemd/system/ and make the changes as shown below:
+
+$ sudo nano /etc/systemd/system/wildfly.service
+
+Save and exit the file
+
+Since we have changed the service unit file, we have to inform the systemd manager
+
+$ sudo systemctl daemon-reload
+Now restart the wildfly service
+
+$ sudo systemctl restart wildfly
+Once restarted, Access the Wildfly management console at:
+
+http://<instance-public-ip>:9990
+
+
+We can successfully access the management console but as shown above, we need a management user to login.
+
+We can use the add-user.sh script, packaged with Wildfly server distribution, to create a management user. Run the script with below command:
+
+$ sudo /opt/wildfly/bin/add-user.sh
+
+Once prompted, select to add a management user and provide your desired username and password.
+
+In the last prompt, for enabling remote access for this user write yes or y.
+
+After providing the required information, the script will verify the user creation as shown above.
+
+We need to restart Wildfly server so our user is picked up during boot.
+
+$ sudo systemctl restart wildfly
+Now if we access the management console again, it will prompt for HTTP basic authorization.
+
+Provide the management user credentials that we created above and click ‘ok’:
+
+
+Once successfully logged in, we land inside the management console
+
+
+We have just done basic setup of wildfly server and enabled/configured remote access to administration and management console. This concludes our tutorial.
+
