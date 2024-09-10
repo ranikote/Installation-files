@@ -1,0 +1,11 @@
+A) If installed via apt (using a repository)
+1)Run the following command to remove Terraform:
+sudo apt-get remove --purge terraform
+2)Then, clean up any leftover dependencies:
+sudo apt-get autoremove
+B)2. If installed via a binary (manual install):
+If Terraform was installed by downloading the binary and placing it in a directory like /usr/local/bin, you can remove it by:
+sudo rm /usr/local/bin/terraform
+3. Verify removal:
+terraform --version
+
